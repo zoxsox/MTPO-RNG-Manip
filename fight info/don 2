@@ -1,0 +1,57 @@
+don 2
+
+frame	desc
+5083	shorts change
+5190	first punch 1st frame, 5 frame window (guaranteed star)
+5239	1st normal gut
+5282	1st normal face
+5325	1st chance to start 64 frame delay
+
+throw star
+
+(throw star)
+5446	normal gut
+5489	normal gut
+5532	normal gut
+5575	normal face (guaranteed star)
+(throw star)
+5619	1st chance to start 64 frame delay
+5740	normal gut
+5783	normal gut
+5826	normal gut
+5869	normal face (knock down)
+
+don't throw star
+
+5391	normal gut
+5434	normal gut
+5477	normal gut
+5520	normal face
+(throw star)
+5563	1st chance to start 64 frame delay
+5684	normal gut (guaranteed star)
+5733	normal gut
+5776	normal gut
+5819	normal face
+(throw star) (knock down)
+
+
+
+
+normal gut - 4 frames too fast and random go through, 9 frames guaranteed, press 2 frames before gloves up, 12 frames where inputs affect star (if right gut)
+normal face - 4 frames too fast and random, 14 frames guaranteed, press 8 frames before animation, 11 frames where inputs affect star
+right gut star - 6 extra frames
+face star - 1 extra frame
+
+long delay - 1 frame delays while 8 bit not set (before crowd)
+
+B vs. A - B you have to press 1 frame later, save 1 frame
+
+random star - left nibble is 0, calculated after crowd
+
+48 frames between gut and face star
+49 frames between gut and gut star
+
+hold A through punch: add 192 to 0019
+hold up and B through punch: add 184 to 0019
+misdirect previous gut and hold up through face: add 88 to 0019
