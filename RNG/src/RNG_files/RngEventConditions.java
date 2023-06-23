@@ -18,7 +18,7 @@ public class RngEventConditions {
 
 	public boolean meetsConditions(InputsValue _0019, FramesValue _001E, boolean rotateHappened) {
 		RngValue _0018 = RngValue.scramble(_0019, _001E);
-		if(rotateHappened)
+		if(afterCrowd && rotateHappened)
 			_0018 = RngValue.rotateRng(_0018);
 		return validByteCallable.isValidRngValue(_0018);
 	}

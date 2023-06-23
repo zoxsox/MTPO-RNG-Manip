@@ -14,11 +14,19 @@ public class ManipControls {
 	
 	@Override
 	public int hashCode() {
-	    return inputsAdded.hashCode() * 31 + framesDelayed.hashCode();
+	    return getInputsAdded().hashCode() * 31 + getFramesDelayed().hashCode();
 	}
 	
 	@Override
 	public String toString() {
-		return "Add " + inputsAdded + " to 0019 and delay " + framesDelayed + " frames";
+		return "Add " + getInputsAdded() + " to 0019 and delay " + getFramesDelayed() + " frames";
+	}
+
+	public FramesIncrement getFramesDelayed() {
+		return framesDelayed;
+	}
+
+	public InputsIncrement getInputsAdded() {
+		return inputsAdded;
 	}
 }
