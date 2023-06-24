@@ -12,6 +12,7 @@ import Random_Events.Don2NoRandomStar;
 import Random_Events.Don2RandomStar;
 import Random_Events.FrameRuleRandomEvent;
 import Random_Events.RandomEvent;
+import Starting_States.StartingStateFactory;
 
 
 public class Testing {
@@ -65,16 +66,8 @@ public class Testing {
 	
 	public static void runSimulation() {
 		FightStrategy strategy = new Don2P1FightStrategy();
-		RandomEvent punch1 = new RandomEvent("g1");
-		RandomEvent punch2 = new RandomEvent("f1");
-		RngEventConditions randomStarCondition = new RngEventConditions("lucky star", new Don2RandomStar(), true);
-		RngEventConditions noRandomStarCondition = new RngEventConditions("no lucky star", new Don2NoRandomStar(), true);
-		punch1.addEventResult(randomStarCondition, "g1_star", punch2);
-		punch1.addEventResult(noRandomStarCondition, "g1_no_star", punch2);
-		
-		FrameRuleRandomEvent frameRuleEvent = new FrameRuleRandomEvent(punch1);
-		FightState startingState = new Don2P1FightState(frameRuleEvent);
-		FightSimulator simulator = new FightSimulator(startingState, strategy);
+		StartingStateFactory startingStateFactory = new StartingStateFactory();
+		FightSimulator simulator = new FightSimulator(startingStateFactory.getStartingState(FightName.DON_2_P1), strategy);
 		
 		FightResults results = simulator.getFightResults();
 		System.out.println(results.getFramesTaken());
