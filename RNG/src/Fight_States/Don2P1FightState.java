@@ -1,6 +1,7 @@
 package Fight_States;
 
 import Memory_Value.FramesIncrement;
+import Memory_Value.InputsIncrement;
 import RNG_files.Don2P1PatternId;
 import RNG_files.ManipControls;
 
@@ -12,6 +13,7 @@ public class Don2P1FightState extends FightState {
 	private Don2P1PatternId currentPatternId;
 	int health;
 	int punches;
+	boolean blocked;
 	
 	public Don2P1FightState() {
 		stars = new StarCount(0);
@@ -20,6 +22,7 @@ public class Don2P1FightState extends FightState {
 		setCurrentPatternId(Don2P1PatternId.preFight);
 		health = 96;
 		punches = 0;
+		blocked = false;
 	}
 
 	public Don2P1PatternId getCurrentPatternId() {
@@ -78,7 +81,7 @@ public class Don2P1FightState extends FightState {
 	
 	@Override
 	public String toString() {
-		return String.format("Stars: %s, currentPatternId: %s, health: %d, punches: %d", stars, currentPatternId, health, punches);
+		return String.format("Stars: %s, currentPatternId: %s, health: %d, punches: %d, _0019: %d, _001E: %d", stars, currentPatternId, health, punches, _0019.getValue(), _001E.getValue());
 	}
 
 	public int numStars() {
@@ -87,5 +90,18 @@ public class Don2P1FightState extends FightState {
 
 	public void resetPunches() {
 		punches = 0;
+	}
+
+	public void setBlocked(boolean b) {
+		blocked = b;
+		
+	}
+
+	public void addInputs(InputsIncrement inputs) {
+		_0019 = get_0019().add(inputs);
+	}
+
+	public boolean isBlocked() {
+		return blocked;
 	}
 }

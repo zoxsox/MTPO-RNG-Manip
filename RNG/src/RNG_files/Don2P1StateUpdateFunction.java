@@ -1,22 +1,24 @@
 package RNG_files;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import Fight_States.Don2P1FightState;
 import Fight_States.FightState;
 import Fight_States.FrameRule;
 import Fight_Strategies.Don2P1FightStrategy;
 import Memory_Value.FramesIncrement;
+import Memory_Value.InputsIncrement;
 import Random_Events.Don2Delay;
 import Random_Events.Don2RandomStar;
+import Random_Events.Don2TakeEarlyPunch;
 
 
 
 public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 	Don2P1FightStrategy strategy;
 	
-	final FramesIncrement GUT_TO_GUT = new FramesIncrement(49);
-	final FramesIncrement GUT_TO_FACE = new FramesIncrement(48);
+	final FramesIncrement GUT_TO_GUT = new FramesIncrement(43);
+	final FramesIncrement GUT_TO_FACE = new FramesIncrement(42);
 	final FramesIncrement FACE_TO_DELAY = new FramesIncrement(31);
 	final FramesIncrement DELAY_TO_DELAY = new FramesIncrement(1);
 	final FramesIncrement DELAY_TO_GUT_STAR = new FramesIncrement(134);
@@ -24,12 +26,12 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 	final FramesIncrement GUT_STAR_DELAY = new FramesIncrement(6);
 	final FramesIncrement FACE_STAR_DELAY = new FramesIncrement(1);
 	
-	static Random rand = new Random();
 	static RngEventConditions randomStarConditions = new RngEventConditions("lucky star", new Don2RandomStar(), true);
 	static RngEventConditions randomDelayConditions = new RngEventConditions("random delay", new Don2Delay(), false);
+	static RngEventConditions takeEarlyPunchConditions = new RngEventConditions("early punch works", new Don2TakeEarlyPunch(), false);
 	
-	public Don2P1StateUpdateFunction() {
-		strategy = new Don2P1FightStrategy();
+	public Don2P1StateUpdateFunction(Don2P1FightStrategy s) {
+		strategy = s;
 	}
 
 	@Override
@@ -38,7 +40,8 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			throw new RuntimeException("Running Don 2 strategy on non-Don 2 state");
 		}
 		Don2P1FightState s = (Don2P1FightState)state;
-		ManipControls controls = strategy.getManipControls(state);
+		ManipControls controls = strategy.getManipControls(s);
+		s.setPrevPunchStar(false);
 		boolean starChance = false;
 		switch (s.getCurrentPatternId()) {
 		case preFight:
@@ -51,7 +54,7 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			break;
 		case weirdGut:
 			//assume right gut
-			s.addFrames(new FramesIncrement(0));
+			s.addFrames(new FramesIncrement(60));
 			s.incPunches();
 			s.dealDamage(5);
 			starChance = true;
@@ -75,13 +78,36 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			break;
 		case gut3:
 			//assume face punch
-			s.addFrames(GUT_TO_FACE);
-			s.incPunches();
-			s.dealDamage(5);
-			if(s.getHealth() != 15) {
-				starChance = true;
+			if(controls.framesDelayed.getValue() > 250) {
+				//early punch, check if goes through
+				s.addFrames(new FramesIncrement(34));
+				s.addInputs(new InputsIncrement(strategy.getInc1()));
+				if(earlyPunchWorks(s)) {
+					s.incPunches();
+					s.dealDamage(5);
+					s.addInputs(new InputsIncrement(strategy.getInc2()));
+					s.addFrames(new FramesIncrement(4));
+					if(getStar(s)) {
+						s.getStar();
+						s.addFrames(FACE_STAR_DELAY);
+					}
+					s.setCurrentPatternId(Don2P1PatternId.done);
+					return;
+				}else {
+					s.setCurrentPatternId(Don2P1PatternId.done);
+					s.setBlocked(true);
+					return;
+				}
+				
+			}else {
+				s.addFrames(GUT_TO_FACE);
+				s.incPunches();
+				s.dealDamage(5);
+				if(s.getHealth() > 5) {
+					starChance = true;
+				}
+				s.setCurrentPatternId(Don2P1PatternId.face);
 			}
-			s.setCurrentPatternId(Don2P1PatternId.face);
 			break;
 		case face:
 			assert controls.framesDelayed.equals(new FramesIncrement(0));
@@ -92,6 +118,7 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			}else if(s.getHealth() <= 22) {
 				//star to finish
 				s.addFrames(new FramesIncrement(50));
+				s.throwStar();
 				s.incPunches();
 				s.dealDamage(22);
 				s.setCurrentPatternId(Don2P1PatternId.done);
@@ -106,7 +133,7 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			s.addFrames(DELAY_TO_DELAY);
 			break;
 		case delayDone:
-			boolean star = strategy.throwStar(state);
+			boolean star = strategy.throwStar(s);
 			if(star) {
 				s.addFrames(DELAY_TO_GUT_STAR);
 				s.throwStar();
@@ -122,7 +149,7 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			s.setCurrentPatternId(Don2P1PatternId.gut1);
 			break;
 		default:
-			break;
+			throw new RuntimeException("Not a recognized state to continue from");
 		}
 		s.add(controls);
 		
@@ -141,14 +168,30 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 			default:
 				throw new RuntimeException("Can only have a star chance on gut or face punch");
 			}
+		}else {
+			if(starChance) {
+				s.setCurrentPatternId(Don2P1PatternId.done);
+			}
 		}
 		
 		if(s.getCurrentPatternId() == Don2P1PatternId.delay) {
-			boolean crowdMoved = rand.nextDouble() < (8/19.25);
+			boolean crowdMoved = ThreadLocalRandom.current().nextDouble() < (8/19.25);
 			if(!randomDelayConditions.meetsConditions(s.get_0019(), s.get_001E(), crowdMoved)) {
 				s.setCurrentPatternId(Don2P1PatternId.delayDone);
 			}
 		}
+		
+		//only do first 2 star chances
+		if(s.getCurrentPatternId() == Don2P1PatternId.face) {
+			s.setCurrentPatternId(Don2P1PatternId.done);
+		}
+		
+		
+	}
+	
+	private boolean earlyPunchWorks(Don2P1FightState s) {
+		boolean crowdMoved = ThreadLocalRandom.current().nextDouble() < (8/19.25);
+		return takeEarlyPunchConditions.meetsConditions(s.get_0019(), s.get_001E(), crowdMoved);
 	}
 
 	private boolean getStar(Don2P1FightState s) {
@@ -159,8 +202,11 @@ public class Don2P1StateUpdateFunction implements StateUpdateFunction {
 		}
 		if(s.numStars() > 0) {
 			//check for random star
-			boolean crowdMoved = rand.nextDouble() < (8/19.25);
-			return randomStarConditions.meetsConditions(s.get_0019(), s.get_001E(), crowdMoved);
+			boolean crowdMoved = ThreadLocalRandom.current().nextDouble() < (8/19.25);
+			if(randomStarConditions.meetsConditions(s.get_0019(), s.get_001E(), crowdMoved)) {
+				s.setPrevPunchStar(true);
+				return true;
+			}
 		}
 		return false;
 	}

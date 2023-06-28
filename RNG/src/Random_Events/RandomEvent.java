@@ -13,7 +13,7 @@ public class RandomEvent {
 	List<RngEventConditions> conditions;
 	List<RandomEventResult> results;
 	
-	static Random rand = new Random();
+	static Random rand;
 	
 	public RandomEvent(String n) {
 		name = n;
