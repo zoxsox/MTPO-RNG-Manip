@@ -1,29 +1,26 @@
 package RNG_files;
 
-import Fight_Results.FightResults;
 import Fight_States.FightState;
-import Fight_Strategies.FightStrategy;
 
 public class FightSimulator {
 
 	FightState currentState;
-	FightStrategy strategy;
+	StateUpdateFunction stateUpdateFunction;
 	
-	public FightSimulator(FightState startingState, FightStrategy str) {
+	public FightSimulator(FightState startingState, StateUpdateFunction f) {
 		currentState = startingState;
-		strategy = str;
+		stateUpdateFunction = f;
 	}
 	
-	private boolean nextFightState() {
-		ManipControls manipControls = strategy.getManipControls(currentState);
-		currentState.add(manipControls);
-		return currentState.nextState();
+	public void nextFightState() {
+		stateUpdateFunction.update(currentState);
 	}
 	
-	public FightResults getFightResults() {
-		while(nextFightState()) {
-			
-		}
-		return currentState.getFightResults();
+	public boolean isDone() {
+		return currentState.isDone();
+	}
+	
+	public FightState getState() {
+		return currentState;
 	}
 }

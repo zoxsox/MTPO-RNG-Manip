@@ -12,7 +12,6 @@ import Random_Events.Don2NoRandomStar;
 import Random_Events.Don2RandomStar;
 import Random_Events.FrameRuleRandomEvent;
 import Random_Events.RandomEvent;
-import Starting_States.StartingStateFactory;
 
 
 public class Testing {
@@ -65,12 +64,15 @@ public class Testing {
 	}
 	
 	public static void runSimulation() {
-		FightStrategy strategy = new Don2P1FightStrategy();
-		StartingStateFactory startingStateFactory = new StartingStateFactory();
-		FightSimulator simulator = new FightSimulator(startingStateFactory.getStartingState(FightName.DON_2_P1), strategy);
+		FightState startingState = new Don2P1FightState();
+		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction();
+		FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
+		while(!simulator.isDone()) {
+			System.out.println(simulator.getState());
+			simulator.nextFightState();
+		}
+		System.out.println(simulator.getState());
 		
-		FightResults results = simulator.getFightResults();
-		System.out.println(results.getFramesTaken());
 	}
 
 }

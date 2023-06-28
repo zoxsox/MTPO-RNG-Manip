@@ -1,10 +1,13 @@
 package Fight_Strategies;
 
 import Fight_States.FightState;
+import Fight_States.FrameRule;
 import RNG_files.ManipControls;
 
 public interface FightStrategy {
 
-	public ManipControls getManipControls(FightState currentState);
+	public FrameRule getFrameRule();
+	
+	public ManipControls getManipControls(FightState state);
 	
 }

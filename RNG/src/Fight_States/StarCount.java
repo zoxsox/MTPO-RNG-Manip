@@ -23,5 +23,9 @@ public class StarCount {
 		return stars;
 	}
 	
+	@Override
+	public String toString() {
+		return stars + "";
+	}
 
 }
