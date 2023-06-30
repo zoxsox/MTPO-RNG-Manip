@@ -1,5 +1,6 @@
 package Fight_Strategies;
 
+import java.net.NoRouteToHostException;
 import java.util.concurrent.ThreadLocalRandom;
 
 import Fight_States.Don2P1FightState;
@@ -11,48 +12,53 @@ import RNG_files.CreateDon2P1ManipControlsFunction;
 import RNG_files.ManipControls;
 
 public class Don2P1FightStrategy implements FightStrategy {
-	static CreateDon2P1ManipControlsFunction normalGutPunch = () -> {
+	public static CreateDon2P1ManipControlsFunction normalGutPunch = () -> {
 		return new ManipControls(gutPunchIncrement(), standardPunchDelay());
 	};
-	static CreateDon2P1ManipControlsFunction normalFacePunch = () -> {
+	public static CreateDon2P1ManipControlsFunction normalFacePunch = () -> {
 		return new ManipControls(facePunchIncrement(), standardPunchDelay());
 	};
-	static CreateDon2P1ManipControlsFunction holdUpDuringDelay = () -> {
+	public static CreateDon2P1ManipControlsFunction holdUpDuringDelay = () -> {
 		return new ManipControls(new InputsIncrement(32), new FramesIncrement(0));
 	};
-	static CreateDon2P1ManipControlsFunction holdAManip = () -> {
-		return new ManipControls(holdAIncrement(), standardPunchDelay());
+	public static CreateDon2P1ManipControlsFunction holdAManip = () -> {
+		return new ManipControls(holdAIncrement(), standardPunchDelay(), true);
 	};
-	static CreateDon2P1ManipControlsFunction misdirectManip = () -> {
+	public static CreateDon2P1ManipControlsFunction madeUpManip = () -> {
+		return new ManipControls(new InputsIncrement(120), standardPunchDelay(), true);
+	};
+	public static CreateDon2P1ManipControlsFunction holdUpandBManip = () -> {
+		return new ManipControls(holdUpAndBIncrement(), standardPunchDelay(), true);
+	};
+	public static CreateDon2P1ManipControlsFunction misdirectManip = () -> {
 		FramesIncrement increment = standardPunchDelay();
-		return new ManipControls(misdirectIncrement(increment.getValue()), increment);
-	};
-	CreateDon2P1ManipControlsFunction bufferFaceControlsFunction = () -> {
-		return new ManipControls(new InputsIncrement(0), new FramesIncrement(252));
+		return new ManipControls(misdirectIncrement(increment.getValue()), increment, true);
 	};
 
 	int frameRuleId;
-	boolean testingIL;
-	int delay1and2;
-	int delay3;
-	int inc1;
-	int inc2;
+	CreateDon2P1ManipControlsFunction face1;
+	CreateDon2P1ManipControlsFunction gut32a;
+	CreateDon2P1ManipControlsFunction gut33a;
+	CreateDon2P1ManipControlsFunction gut22b;
+	CreateDon2P1ManipControlsFunction gut23b;
+	CreateDon2P1ManipControlsFunction face2b;
+	CreateDon2P1ManipControlsFunction gut33b;
+	CreateDon2P1ManipControlsFunction face3b;
 
-	public Don2P1FightStrategy(int frameRuleId, int d1and2, int d3, int i1, int i2) {
+	public Don2P1FightStrategy(int frameRuleId, CreateDon2P1ManipControlsFunction f1,
+			CreateDon2P1ManipControlsFunction g32a, CreateDon2P1ManipControlsFunction g33a,
+			CreateDon2P1ManipControlsFunction g22b, CreateDon2P1ManipControlsFunction g23b,
+			CreateDon2P1ManipControlsFunction f2b, CreateDon2P1ManipControlsFunction g33b,
+			CreateDon2P1ManipControlsFunction f3b) {
 		this.frameRuleId = frameRuleId;
-		this.testingIL = true;
-		delay1and2 = d1and2;
-		delay3 = d3;
-		inc1 = i1;
-		inc2 = i2;
-	}
-	
-	public int getInc1() {
-		return inc1;
-	}
-	
-	public int getInc2() {
-		return inc2;
+		face1 = f1;
+		gut32a = g32a;
+		gut33a = g33a;
+		gut22b = g22b;
+		gut23b = g23b;
+		face2b = f2b;
+		gut33b = g33b;
+		face3b = f3b;
 	}
 
 	public ManipControls getManipControls(FightState state) {
@@ -62,36 +68,54 @@ public class Don2P1FightStrategy implements FightStrategy {
 		Don2P1FightState s = (Don2P1FightState) state;
 		switch (s.getCurrentPatternId()) {
 		case preFight:
-			if (testingIL) {
-				return new ManipControls(InputsIncrement.randomIncrementNoRight(), new FramesIncrement(0));
-			}
-			return new ManipControls(InputsIncrement.randomIncrement(), standardPunchDelay());
+			return new ManipControls(InputsIncrement.randomIncrement(), firstPunchDelay());
 		case weirdGut:
-			if (testingIL) {
-				return new ManipControls(gutPunchIncrement(), new FramesIncrement(delay1and2));
-			}
 			return normalGutPunch.getManipControls();
 		case gut1:
-			if (s.isPrevPunchStar()) {
-				return holdAManip.getManipControls();
-			} else {
-				return normalGutPunch.getManipControls();
+			if (s.isPrevPunchRandomStar()) {
+				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("gut22b");
+					return gut22b.getManipControls();
+				}
+				if (s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
+					s.setAttemptedManip("gut32a");
+					return gut32a.getManipControls();
+				}
 			}
+			return normalGutPunch.getManipControls();
 		case gut2:
-			if (s.isPrevPunchStar()) {
-				return holdAManip.getManipControls();
-			} else {
-				return normalGutPunch.getManipControls();
+			if (s.isPrevPunchRandomStar()) {
+				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("gut23b");
+					return gut23b.getManipControls();
+				}
+				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("gut33b");
+					return gut33b.getManipControls();
+				}
+				if (s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
+					s.setAttemptedManip("gut33a");
+					return gut33a.getManipControls();
+				}
+					
 			}
+			return normalGutPunch.getManipControls();
 		case gut3:
-			if (testingIL) {
-				return bufferFaceControlsFunction.getManipControls();
+			if (s.isPrevPunchRandomStar()) {
+				if (s.getRoundOfPattern() == 1 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("face1");
+					return face1.getManipControls();
+				}	
+				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("face2b");
+					return face2b.getManipControls();
+				}
+				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
+					s.setAttemptedManip("face3b");
+					return face3b.getManipControls();
+				}
 			}
-			if (s.isPrevPunchStar()) {
-				return misdirectManip.getManipControls();
-			} else {
-				return normalFacePunch.getManipControls();
-			}
+			return normalFacePunch.getManipControls();
 		case face:
 			return new ManipControls(InputsIncrement.randomIncrement(), new FramesIncrement(0));
 		case delay:
@@ -108,12 +132,37 @@ public class Don2P1FightStrategy implements FightStrategy {
 	}
 
 	public boolean throwStar(Don2P1FightState state) {
-		return state.getHealth() < 81 || state.numStars() > 1;
+		boolean throwStar = state.getHealth() < 81 || state.numStars() > 1;
+		if(throwStar)
+			state.setRoute(Don2P1Route.A);
+		else {
+			state.setRoute(Don2P1Route.B);
+		}
+		return throwStar;
 	}
 
 	private static FramesIncrement standardPunchDelay() {
-		int delay = ThreadLocalRandom.current().nextInt(0, 1);
-		return new FramesIncrement(delay);
+		double r = ThreadLocalRandom.current().nextDouble();
+		if (r < .3)
+			return new FramesIncrement(0);
+		if (r < .8)
+			return new FramesIncrement(1);
+		return new FramesIncrement(2);
+	}
+
+	private static FramesIncrement firstPunchDelay() {
+		double r = ThreadLocalRandom.current().nextDouble();
+		if (r < .15)
+			return new FramesIncrement(1);
+		if (r < .32)
+			return new FramesIncrement(1);
+		if (r < .55)
+			return new FramesIncrement(2);
+		if (r < .75)
+			return new FramesIncrement(3);
+		if (r < .9)
+			return new FramesIncrement(4);
+		return new FramesIncrement(5);
 	}
 
 	private static InputsIncrement gutPunchIncrement() {

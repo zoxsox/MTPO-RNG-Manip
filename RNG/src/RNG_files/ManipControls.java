@@ -6,10 +6,18 @@ import Memory_Value.InputsIncrement;
 public class ManipControls {
 	InputsIncrement inputsAdded;
 	FramesIncrement framesDelayed;
+	boolean manip;
 	
 	public ManipControls(InputsIncrement inputsAdded, FramesIncrement framesDelayed) {
 		this.inputsAdded = inputsAdded;
 		this.framesDelayed = framesDelayed;
+		this.manip = false;
+	}
+	
+	public ManipControls(InputsIncrement inputsAdded, FramesIncrement framesDelayed, boolean m) {
+		this.inputsAdded = inputsAdded;
+		this.framesDelayed = framesDelayed;
+		this.manip = m;
 	}
 	
 	@Override
