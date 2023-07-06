@@ -2,12 +2,15 @@ package RNG_files;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import java.util.Set;
 
 import Fight_Results.FightResults;
 import Fight_States.Don2ILP1FightState;
@@ -258,79 +261,126 @@ public class Testing {
 	public static void runSSSimulation() {
 		double max = 0;
 		int maxfr = -1;
-		// IL testing
 
-		List<CreateDon2P1ManipControlsFunction> gutList = new ArrayList<>();
-		gutList.add(Don2P1FightStrategy.holdAManip);
-		gutList.add(Don2P1FightStrategy.madeUpManip);
+		// test match
+//		System.out.println(Don2P1FightStrategy.holdAManip.getManipControls());
+//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+//				.getFunction(Collections.emptyList(), Arrays.asList(Button.A), 0).getManipControls());
+//
+//		System.out.println(Don2P1FightStrategy.holdAandSelectAndPunchBManip.getManipControls());
+//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+//				.getFunction(Arrays.asList(Button.A, Button.SELECT), Arrays.asList(Button.B), 0).getManipControls());
+//
+//		System.out.println(Don2P1FightStrategy.misdirectManip.getManipControls());
+//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+//				.getFunction(Arrays.asList(Button.UP), Arrays.asList(Button.B), 0).getManipControls());
 
-		List<CreateDon2P1ManipControlsFunction> faceList = new ArrayList<>();
-		faceList.add(Don2P1FightStrategy.misdirectManip);
-		faceList.add(Don2P1FightStrategy.holdUpandBManip);
+		Map<String, Collection<Button>> holdButtons = new HashMap<>();
+		Map<String, Collection<Button>> punchButtons = new HashMap<>();
+		holdButtons.put("gutHoldAManip", Arrays.asList());
+		punchButtons.put("gutHoldAManip", Arrays.asList(Button.A));
+		holdButtons.put("gutHoldBManip", Arrays.asList());
+		punchButtons.put("gutHoldBManip", Arrays.asList(Button.B));
+		holdButtons.put("gutHoldSelectAndPunchAManip", Arrays.asList(Button.SELECT));
+		punchButtons.put("gutHoldSelectAndPunchAManip", Arrays.asList(Button.A));
+		holdButtons.put("gutHoldSelectAndPunchBManip", Arrays.asList(Button.SELECT));
+		punchButtons.put("gutHoldSelectAndPunchBManip", Arrays.asList(Button.B));
+		holdButtons.put("gutHoldAandPunchBManip", Arrays.asList(Button.A));
+		punchButtons.put("gutHoldAandPunchBManip", Arrays.asList(Button.B));
+		holdButtons.put("gutHoldBandPunchAManip", Arrays.asList(Button.B));
+		punchButtons.put("gutHoldBandPunchAManip", Arrays.asList(Button.A));
+		holdButtons.put("gutHoldAandSelectAndPunchBManip", Arrays.asList(Button.A, Button.SELECT));
+		punchButtons.put("gutHoldAandSelectAndPunchBManip", Arrays.asList(Button.B));
+		holdButtons.put("gutHoldBandSelectAndPunchAManip", Arrays.asList(Button.B, Button.SELECT));
+		punchButtons.put("gutHoldBandSelectAndPunchAManip", Arrays.asList(Button.A));
+
+		holdButtons.put("faceMisdirectManip", Arrays.asList(Button.UP));
+		punchButtons.put("faceMisdirectManip", Arrays.asList(Button.B));
+		holdButtons.put("faceMisdirectAndHoldAManip", Arrays.asList(Button.UP, Button.A));
+		punchButtons.put("faceMisdirectAndHoldAManip", Arrays.asList(Button.B));
+		holdButtons.put("faceHoldUpandBManip", Arrays.asList());
+		punchButtons.put("faceHoldUpandBManip", Arrays.asList(Button.UP, Button.B));
+
+		Set<String> possibleManips = holdButtons.keySet();
+
 		for (int fr = 0; fr < 32; fr++) {
-			for (CreateDon2P1ManipControlsFunction f1 : faceList) {
-				for (CreateDon2P1ManipControlsFunction f2b : faceList) {
-					for (CreateDon2P1ManipControlsFunction f3b : faceList) {
-						for (CreateDon2P1ManipControlsFunction g32a : gutList) {
-							for (CreateDon2P1ManipControlsFunction g33a : gutList) {
-								for (CreateDon2P1ManipControlsFunction g22b : gutList) {
-									for (CreateDon2P1ManipControlsFunction g23b : gutList) {
-										for (CreateDon2P1ManipControlsFunction g33b : gutList) {
-											double score = getScore(10000, fr, f1, f2b, f3b, g32a, g33a, g22b, g23b, g33b);
-											if(score > max) {
-												max = score;
-												System.out.println(max);
-											}
-											//System.out.println(score);
-										}
-									}
-								}
-							}
+			double frameRuleScore = 0;
+			Map<String, Pair<String, Integer>> bestManips = new HashMap<>();
+			List<String> bestScoreSequence = new ArrayList<>();
+			for (String punchManiping : Don2P1FightStrategy.manipNames) {
+				double maxScore = 0;
+				String maxScoreStrat = "";
+				Pair<String, Integer> maxManip = null;
+				for (String manip : possibleManips) {
+					if((punchManiping.startsWith("gut") && !manip.startsWith("gut")) || 
+							(punchManiping.startsWith("face") && !manip.startsWith("face"))) {
+						continue;
+					}
+					for (int delay = 0; delay < 8; delay++) {
+						CreateDon2P1ManipControlsFunction function = CreateDon2P1ManipControlsFunctionFactory
+								.getFunction(holdButtons.get(manip), punchButtons.get(manip), delay);
+						Map<String, CreateDon2P1ManipControlsFunction> manips = Map.of(punchManiping, function);
+						double score = getScore(100000, fr, manips, punchManiping);
+						if (score > maxScore) {
+							maxScore = score;
+							maxScoreStrat = String.format("Punch: %s, Manip: %s, Delay: %d, Score: %f", punchManiping, manip, delay, score);
+							maxManip = new Pair<>(manip, delay);
 						}
 					}
 				}
+				bestScoreSequence.add(maxScoreStrat);
+				frameRuleScore += maxScore;
+				bestManips.put(punchManiping, maxManip);
 			}
+			System.out.println(String.format("Max score for fr %d: %f", fr, frameRuleScore));
+			for(String s: bestScoreSequence) {
+				System.out.println(s);
+			}
+			Map<String, CreateDon2P1ManipControlsFunction> manips = new HashMap<>();
+			for(String m: bestManips.keySet()) {
+				CreateDon2P1ManipControlsFunction function = CreateDon2P1ManipControlsFunctionFactory
+						.getFunction(holdButtons.get(bestManips.get(m).first), punchButtons.get(bestManips.get(m).first), bestManips.get(m).second);
+				manips.put(m, function);
+			}
+			System.out.println(getAverageStars(1000000, fr, manips));
+			//System.out.println("Normal: " +getAverageStars(100000, fr, new HashMap<>()));
 		}
 	}
-
-
-	public static double getScore(int numIters, int fr, CreateDon2P1ManipControlsFunction f1, CreateDon2P1ManipControlsFunction f2b,
-			CreateDon2P1ManipControlsFunction f3b, CreateDon2P1ManipControlsFunction g32a,
-			CreateDon2P1ManipControlsFunction g33a, CreateDon2P1ManipControlsFunction g22b,
-			CreateDon2P1ManipControlsFunction g23b, CreateDon2P1ManipControlsFunction g33b) {
-		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(
-				new Don2P1FightStrategy(fr, f1, f2b, f3b, g32a, g33a, g22b, g23b, g33b));
+	
+	public static double getAverageStars(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips) {
+		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(new Don2P1FightStrategy(fr, manips));
 		int totalStars = 0;
-		int count = 0;
+		for (int i = 0; i < numIters; i++) {
+			FightState startingState = new Don2P1FightState();
+			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
+			while (!simulator.isDone()) {
+				simulator.nextFightState();
+			}
+			Don2P1FightState finalState = (Don2P1FightState) simulator.getState();
+			int numStars = finalState.numStars();
+			totalStars += numStars;
+		}
+		return totalStars / ((double)numIters);
+	}
+
+	public static double getScore(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips, String manipToScore) {
+		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(new Don2P1FightStrategy(fr, manips));
 		Map<String, Integer> manipSuccesses = new HashMap<>();
 		Map<String, Integer> manipAttempts = new HashMap<>();
 		for (int i = 0; i < numIters; i++) {
 			FightState startingState = new Don2P1FightState();
 			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
 			while (!simulator.isDone()) {
-				//System.out.println(simulator.getState());
 				simulator.nextFightState();
 			}
 			Don2P1FightState finalState = (Don2P1FightState) simulator.getState();
-			//System.out.println(simulator.getState());
-			int numStars = finalState.numStars();
-			if(numStars > 2) {
-				totalStars += numStars;
-				count++;
-			}
-			if(!finalState.getAttemptedManip().equals("none")) {
+			if (!finalState.getAttemptedManip().equals("none")) {
 				manipAttempts.merge(finalState.getAttemptedManip(), 1, Integer::sum);
-				if(finalState.isSuccessfulManip())
+				if (finalState.isSuccessfulManip())
 					manipSuccesses.merge(finalState.getAttemptedManip(), 1, Integer::sum);
 			}
 		}
-//		for(String p: manipSuccesses.keySet()) {
-//			System.out.println(String.format("Manip success rate for %s: %d/%d (%f)", p, manipSuccesses.get(p), manipAttempts.get(p), manipSuccesses.get(p)/((double)manipAttempts.get(p))));
-//		}
-//		System.out.println();
-//		System.out.println(manipAttempts);
-		return count / ((double) numIters);
-		//return manipSuccesses.get("gut22b")/((double)manipAttempts.get("gut22b"));
+		return manipSuccesses.get(manipToScore) / ((double) manipAttempts.get(manipToScore));
 	}
 
 }

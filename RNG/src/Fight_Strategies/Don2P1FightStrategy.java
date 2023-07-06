@@ -1,7 +1,9 @@
 package Fight_Strategies;
 
-import java.net.NoRouteToHostException;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Arrays;
+import java.util.List;
 
 import Fight_States.Don2P1FightState;
 import Fight_States.FightState;
@@ -21,44 +23,20 @@ public class Don2P1FightStrategy implements FightStrategy {
 	public static CreateDon2P1ManipControlsFunction holdUpDuringDelay = () -> {
 		return new ManipControls(new InputsIncrement(32), new FramesIncrement(0));
 	};
-	public static CreateDon2P1ManipControlsFunction holdAManip = () -> {
-		return new ManipControls(holdAIncrement(), standardPunchDelay(), true);
-	};
-	public static CreateDon2P1ManipControlsFunction madeUpManip = () -> {
-		return new ManipControls(new InputsIncrement(120), standardPunchDelay(), true);
-	};
-	public static CreateDon2P1ManipControlsFunction holdUpandBManip = () -> {
-		return new ManipControls(holdUpAndBIncrement(), standardPunchDelay(), true);
-	};
-	public static CreateDon2P1ManipControlsFunction misdirectManip = () -> {
-		FramesIncrement increment = standardPunchDelay();
-		return new ManipControls(misdirectIncrement(increment.getValue()), increment, true);
-	};
+	
+	public static List<String> manipNames = Arrays.asList(
+			"face1", "gut32a", "gut33a", "gut22b", "gut23b", "face2b", "gut33b", "face3b"
+	);
 
 	int frameRuleId;
-	CreateDon2P1ManipControlsFunction face1;
-	CreateDon2P1ManipControlsFunction gut32a;
-	CreateDon2P1ManipControlsFunction gut33a;
-	CreateDon2P1ManipControlsFunction gut22b;
-	CreateDon2P1ManipControlsFunction gut23b;
-	CreateDon2P1ManipControlsFunction face2b;
-	CreateDon2P1ManipControlsFunction gut33b;
-	CreateDon2P1ManipControlsFunction face3b;
+	Map<String, CreateDon2P1ManipControlsFunction> manips;
 
-	public Don2P1FightStrategy(int frameRuleId, CreateDon2P1ManipControlsFunction f1,
-			CreateDon2P1ManipControlsFunction g32a, CreateDon2P1ManipControlsFunction g33a,
-			CreateDon2P1ManipControlsFunction g22b, CreateDon2P1ManipControlsFunction g23b,
-			CreateDon2P1ManipControlsFunction f2b, CreateDon2P1ManipControlsFunction g33b,
-			CreateDon2P1ManipControlsFunction f3b) {
+	public Don2P1FightStrategy(int frameRuleId, Map<String, CreateDon2P1ManipControlsFunction> m) {
 		this.frameRuleId = frameRuleId;
-		face1 = f1;
-		gut32a = g32a;
-		gut33a = g33a;
-		gut22b = g22b;
-		gut23b = g23b;
-		face2b = f2b;
-		gut33b = g33b;
-		face3b = f3b;
+		if(!manipNames.containsAll(m.keySet())) {
+			throw new RuntimeException("Passed in manip names that are not supported");
+		}
+		manips = m;
 	}
 
 	public ManipControls getManipControls(FightState state) {
@@ -73,46 +51,47 @@ public class Don2P1FightStrategy implements FightStrategy {
 			return normalGutPunch.getManipControls();
 		case gut1:
 			if (s.isPrevPunchRandomStar()) {
-				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+				if (manips.containsKey("gut22b") && s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("gut22b");
-					return gut22b.getManipControls();
+					return manips.get("gut22b").getManipControls();
 				}
-				if (s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
+				if (manips.containsKey("gut32a") && s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
 					s.setAttemptedManip("gut32a");
-					return gut32a.getManipControls();
+					return manips.get("gut32a").getManipControls();
 				}
 			}
 			return normalGutPunch.getManipControls();
 		case gut2:
 			if (s.isPrevPunchRandomStar()) {
-				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+				if (manips.containsKey("gut23b") && s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("gut23b");
-					return gut23b.getManipControls();
+					return manips.get("gut23b").getManipControls();
 				}
-				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
+				if (manips.containsKey("gut33b") && s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("gut33b");
-					return gut33b.getManipControls();
+					return manips.get("gut33b").getManipControls();
 				}
-				if (s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
+				if (manips.containsKey("gut33a") && s.getRoute() == Don2P1Route.A && s.getRoundOfPattern() == 3 && s.getRandomStars() == 2) {
 					s.setAttemptedManip("gut33a");
-					return gut33a.getManipControls();
+					return manips.get("gut33a").getManipControls();
 				}
+				
 					
 			}
 			return normalGutPunch.getManipControls();
 		case gut3:
 			if (s.isPrevPunchRandomStar()) {
-				if (s.getRoundOfPattern() == 1 && s.getRandomStars() == 1) {
+				if (manips.containsKey("face1") && s.getRoundOfPattern() == 1 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("face1");
-					return face1.getManipControls();
+					return manips.get("face1").getManipControls();
 				}	
-				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
+				if (manips.containsKey("face2b") && s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 2 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("face2b");
-					return face2b.getManipControls();
+					return manips.get("face2b").getManipControls();
 				}
-				if (s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
+				if (manips.containsKey("face3b") && s.getRoute() == Don2P1Route.B && s.getRoundOfPattern() == 3 && s.getRandomStars() == 1) {
 					s.setAttemptedManip("face3b");
-					return face3b.getManipControls();
+					return manips.get("face3b").getManipControls();
 				}
 			}
 			return normalFacePunch.getManipControls();
@@ -133,10 +112,12 @@ public class Don2P1FightStrategy implements FightStrategy {
 
 	public boolean throwStar(Don2P1FightState state) {
 		boolean throwStar = state.getHealth() < 81 || state.numStars() > 1;
-		if(throwStar)
-			state.setRoute(Don2P1Route.A);
-		else {
-			state.setRoute(Don2P1Route.B);
+		if(state.getHealth() >= 66) {
+			if(throwStar)
+				state.setRoute(Don2P1Route.A);
+			else {
+				state.setRoute(Don2P1Route.B);
+			}
 		}
 		return throwStar;
 	}
@@ -149,11 +130,15 @@ public class Don2P1FightStrategy implements FightStrategy {
 			return new FramesIncrement(1);
 		return new FramesIncrement(2);
 	}
+	
+	private static FramesIncrement leftGutDelay() {
+		return new FramesIncrement(standardPunchDelay().getValue()-1);
+	}
 
 	private static FramesIncrement firstPunchDelay() {
 		double r = ThreadLocalRandom.current().nextDouble();
 		if (r < .15)
-			return new FramesIncrement(1);
+			return new FramesIncrement(0);
 		if (r < .32)
 			return new FramesIncrement(1);
 		if (r < .55)
@@ -166,7 +151,7 @@ public class Don2P1FightStrategy implements FightStrategy {
 	}
 
 	private static InputsIncrement gutPunchIncrement() {
-		int framesPressA = ThreadLocalRandom.current().nextInt(0, 16);
+		int framesPressA = ThreadLocalRandom.current().nextInt(8,16);
 		return new InputsIncrement(framesPressA * 16);
 	}
 
@@ -174,17 +159,5 @@ public class Don2P1FightStrategy implements FightStrategy {
 		int framesPressB = ThreadLocalRandom.current().nextInt(6, 10);
 		int framesPressUp = ThreadLocalRandom.current().nextInt(10, 15);
 		return new InputsIncrement((framesPressB * 8 + framesPressUp * 32) % 0x100);
-	}
-
-	private static InputsIncrement holdAIncrement() {
-		return new InputsIncrement(192);
-	}
-
-	private static InputsIncrement holdUpAndBIncrement() {
-		return new InputsIncrement(184);
-	}
-
-	private static InputsIncrement misdirectIncrement(int framesDelayed) {
-		return new InputsIncrement(88 + framesDelayed * 32);
 	}
 }

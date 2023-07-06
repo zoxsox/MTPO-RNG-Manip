@@ -6,7 +6,7 @@ public abstract class MemoryValue {
 	protected final boolean[] bitArray;
 	
 	protected MemoryValue(int memoryValue) {
-		value = memoryValue;
+		value = ((memoryValue % 0x100) + 0x100) % 0x100;
 		bitArray = new boolean[8];
 		for(int i = 0; i < 8; i++) {
 			bitArray[i] = getBit(i);
@@ -60,6 +60,6 @@ public abstract class MemoryValue {
 	
 	protected static int combineValues(int firstValue, int secondValue) {
 		return (firstValue + secondValue) % 0x100;
-	}	
+	}
 
 }
