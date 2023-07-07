@@ -16,6 +16,7 @@ import Fight_Results.FightResults;
 import Fight_States.Don2ILP1FightState;
 import Fight_States.Don2P1FightState;
 import Fight_States.FightState;
+import Fight_States.FrameRule;
 import Fight_Strategies.Don2ILP1FightStrategy;
 import Fight_Strategies.Don2P1FightStrategy;
 import Fight_Strategies.FightStrategy;
@@ -31,7 +32,14 @@ public class Testing {
 	public static void main(String[] args) {
 		// runCalculations();
 		// runILSimulation();
-		runSSSimulation();
+		//runSSSimulation();
+		frameRuleTesting();
+	}
+
+	private static void frameRuleTesting() {
+		FrameRule fr = new FrameRule(0);
+		
+		System.out.println(fr.getDon2SSWindows(10, 0));
 	}
 
 	public static void runCalculations() {
