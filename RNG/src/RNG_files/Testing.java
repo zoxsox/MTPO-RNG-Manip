@@ -3,37 +3,30 @@ package RNG_files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 import java.util.Set;
 
-import Fight_Results.FightResults;
 import Fight_States.Don2ILP1FightState;
 import Fight_States.Don2P1FightState;
 import Fight_States.FightState;
 import Fight_States.FrameRule;
 import Fight_Strategies.Don2ILP1FightStrategy;
 import Fight_Strategies.Don2P1FightStrategy;
-import Fight_Strategies.FightStrategy;
 import Memory_Value.FramesIncrement;
 import Memory_Value.FramesValue;
 import Random_Events.Don2NoRandomStar;
 import Random_Events.Don2RandomStar;
-import Random_Events.FrameRuleRandomEvent;
-import Random_Events.RandomEvent;
 
 public class Testing {
 
 	public static void main(String[] args) {
 		// runCalculations();
-		// runILSimulation();
+		runILSimulation();
 		//runSSSimulation();
-		frameRuleTesting();
+		//frameRuleTesting();
 	}
 
 	private static void frameRuleTesting() {
@@ -188,6 +181,7 @@ public class Testing {
 				}
 			}
 		}
+		System.out.println("Best strategy:");
 		System.out.println(String.format("d1and2: %d, fr: %d, inc1: %d, inc2: %d, prob: %f", maxd1, maxfr, maxInc1,
 				maxInc2, maxProb));
 
@@ -199,18 +193,31 @@ public class Testing {
 
 //		d1and2: 5, fr: 22, inc1: 192, inc2: 224, prob: 0.033550
 
-//		int numIters = 1000000;
-//		List<Integer> starCounts1 = getStarCounts(22, 5, 0, numIters,192,224);
-//		//List<Integer> starCounts2 = getStarCounts(29, 2, 0, numIters);
-//		List<Boolean> blocks1 = getBlocks(22, 5, 0, numIters,192,224);
-//		//List<Boolean> blocks2 = getBlocks(29, 2, 0, numIters);
-//		System.out.println("Chance don't get 1st star: " + starCounts1.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
-//		System.out.println("Chance get 1st star but not 2nd " + starCounts1.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
-//		System.out.println("Chance get both stars: " + starCounts1.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
-//		//System.out.println(starCounts2.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
-//		System.out.println("Chance get blocked after getting 1st star: " + blocks1.stream().filter(a -> a).count() / ((double) numIters));
-//		//System.out.println(blocks1.stream().limit(100).collect(Collectors.toList()));
+		System.out.println("\nDelay 5 frames: ");
+		int numIters = 10000000;
+		List<Integer> starCounts1 = getStarCounts(22, 5, 0, numIters,192,224);
+		List<Boolean> blocks1 = getBlocks(22, 5, 0, numIters,192,224);
+		System.out.println("Chance don't get 1st star: " + starCounts1.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get 1st star but not 2nd " + starCounts1.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get both stars: " + starCounts1.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get blocked after getting 1st star: " + blocks1.stream().filter(a -> a).count() / ((double) numIters));
+		System.out.println();
+		
+		System.out.println("Delay 6 frames: ");
+		List<Integer> starCounts2 = getStarCounts(22, 6, 0, numIters,192,224);
+		List<Boolean> blocks2 = getBlocks(22, 6, 0, numIters,192,224);
+		System.out.println("Chance don't get 1st star: " + starCounts2.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get 1st star but not 2nd " + starCounts2.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get both stars: " + starCounts2.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get blocked after getting 1st star: " + blocks2.stream().filter(a -> a).count() / ((double) numIters));
 
+		FrameRule fr22 = new FrameRule(22);
+		System.out.println("\nFirst try don 2 timings:");
+		System.out.println(fr22.getDon2ILNoLossWindows(0, 30));
+		System.out.println("Second try don 2 timings:");
+		System.out.println(fr22.getDon2ILWithLossWindows(1, 0));
+		
+		
 //		double maxProb = 0;
 //		int maxfr = -1, maxd1 = -1, maxd3 = -1;
 //		// IL testing
@@ -234,35 +241,6 @@ public class Testing {
 //			}
 //		}
 //		System.out.println(String.format("d1and2: %d, d3: %d, fr: %d, prob: %f", maxd1, maxd3, maxfr, maxProb));
-
-//		for(int j = 0; j<32; j++) {
-//		StateUpdateFunction stateUpdateFunction = new Don2ILP1StateUpdateFunction(new Don2ILP1FightStrategy(j));
-//		List<Integer> starCounts = new ArrayList<>();
-//		int numIters = 1000000;
-//		for(int i = 0; i<numIters; i++) {
-//			FightState startingState = new Don2ILP1FightState();
-//			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
-//			while(!simulator.isDone()) {
-//				simulator.nextFightState();
-//			}
-//			starCounts.add(((Don2ILP1FightState)simulator.getState()).numStars());
-//		}
-//		System.out.println(starCounts.stream().filter(a -> a == 0).mapToDouble(a -> a).count() / ((double)numIters));
-//		System.out.println(starCounts.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double)numIters));
-//		System.out.println(starCounts.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double)numIters));
-//		System.out.println(starCounts.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double)numIters));
-//		System.out.println(starCounts.stream().mapToDouble(a -> a).average());
-//		}
-
-//		StateUpdateFunction stateUpdateFunction = new Don2ILP1StateUpdateFunction(
-//				new Don2ILP1FightStrategy(0, 0, 0));
-//		FightState startingState = new Don2ILP1FightState();
-//		FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
-//		while (!simulator.isDone()) {
-//			System.out.println(simulator.getState());
-//			simulator.nextFightState();
-//		}
-//		System.out.println(((Don2ILP1FightState)simulator.getState()).isBlocked());
 
 	}
 
@@ -350,14 +328,15 @@ public class Testing {
 						.getFunction(holdButtons.get(bestManips.get(m).first), punchButtons.get(bestManips.get(m).first), bestManips.get(m).second);
 				manips.put(m, function);
 			}
-			System.out.println(getAverageStars(1000000, fr, manips));
-			//System.out.println("Normal: " +getAverageStars(100000, fr, new HashMap<>()));
+			System.out.println(getStarResults(1000000, fr, manips));
+			System.out.println("Normal: " +getStarResults(1000000, fr, new HashMap<>()));
 		}
 	}
 	
-	public static double getAverageStars(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips) {
+	public static String getStarResults(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips) {
 		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(new Don2P1FightStrategy(fr, manips));
 		int totalStars = 0;
+		int[] starCounts = new int[4];
 		for (int i = 0; i < numIters; i++) {
 			FightState startingState = new Don2P1FightState();
 			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
@@ -366,9 +345,15 @@ public class Testing {
 			}
 			Don2P1FightState finalState = (Don2P1FightState) simulator.getState();
 			int numStars = finalState.numStars();
+			starCounts[numStars]++;
 			totalStars += numStars;
 		}
-		return totalStars / ((double)numIters);
+		String resultString = "";
+		for(int i = 0; i<4; i++) {
+			resultString += String.format("Chance of %d stars: %f\n", i, starCounts[i] / ((double)numIters));
+		}
+		resultString += String.format("Average stars: %f\n", totalStars / ((double)numIters));
+		return resultString;
 	}
 
 	public static double getScore(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips, String manipToScore) {

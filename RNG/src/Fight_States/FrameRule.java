@@ -8,6 +8,8 @@ public class FrameRule {
 	static final int LAG_FRAMES_FROM_POWER_ON = 206;
 	
 	static final int LAG_FRAMES_FROM_TITLE_TO_DON_2 = 35;
+	static final int LAG_FRAMES_FROM_TITLE_TO_DON_2_WITH_CODE = 4;
+	static final int LAG_FRAMES_FROM_TITLE_TO_DON_2_WITH_CODE_AND_LOSS = 7;
 	
 	static final double FRAME_RATE = 60.098814;
 	
@@ -38,11 +40,36 @@ public class FrameRule {
 		String s = "";
 		for(int i = 0; i<50; i++) {
 			double seconds = f / FRAME_RATE;
-			s += String.format("%d:%f\n", (int)Math.floor(seconds/60), seconds % 60);
+			s += String.format("%d:%06.3f\n", (int)Math.floor(seconds/60), seconds % 60);
 			f += 256;
 		}
 		return s;
-		
+	}
+	
+	public String getDon2ILNoLossWindows(int minMinutes, int minSeconds) {
+		int totalMinSeconds = 60*minMinutes + minSeconds;
+		double baseFrames = target_001E + LAG_FRAMES_FROM_RESET + LAG_FRAMES_FROM_TITLE_TO_DON_2_WITH_CODE;
+		double f = baseFrames + 256*Math.floor((totalMinSeconds * FRAME_RATE) / 256);
+		String s = "";
+		for(int i = 0; i<50; i++) {
+			double seconds = f / FRAME_RATE;
+			s += String.format("%d:%06.3f\n", (int)Math.floor(seconds/60), seconds % 60);
+			f += 256;
+		}
+		return s;
+	}
+	
+	public String getDon2ILWithLossWindows(int minMinutes, int minSeconds) {
+		int totalMinSeconds = 60*minMinutes + minSeconds;
+		double baseFrames = target_001E + LAG_FRAMES_FROM_RESET + LAG_FRAMES_FROM_TITLE_TO_DON_2_WITH_CODE_AND_LOSS;
+		double f = baseFrames + 256*Math.floor((totalMinSeconds * FRAME_RATE) / 256);
+		String s = "";
+		for(int i = 0; i<50; i++) {
+			double seconds = f / FRAME_RATE;
+			s += String.format("%d:%06.3f\n", (int)Math.floor(seconds/60), seconds % 60);
+			f += 256;
+		}
+		return s;
 	}
 
 }
