@@ -3,6 +3,7 @@ package Fight_Strategies;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import Fight_States.Don2P1FightState;
@@ -11,13 +12,14 @@ import Fight_States.FrameRule;
 import Memory_Value.FramesIncrement;
 import Memory_Value.InputsIncrement;
 import RNG_files.CreateDon2P1ManipControlsFunction;
+import RNG_files.Don2P1PatternId;
 import RNG_files.ManipControls;
 
 public class Don2P1FightStrategy implements FightStrategy {
-	public static CreateDon2P1ManipControlsFunction normalGutPunch = () -> {
+	public CreateDon2P1ManipControlsFunction normalGutPunch = () -> {
 		return new ManipControls(gutPunchIncrement(), standardPunchDelay());
 	};
-	public static CreateDon2P1ManipControlsFunction normalFacePunch = () -> {
+	public CreateDon2P1ManipControlsFunction normalFacePunch = () -> {
 		return new ManipControls(facePunchIncrement(), standardPunchDelay());
 	};
 	public static CreateDon2P1ManipControlsFunction holdUpDuringDelay = () -> {
@@ -30,6 +32,13 @@ public class Don2P1FightStrategy implements FightStrategy {
 
 	int frameRuleId;
 	Map<String, CreateDon2P1ManipControlsFunction> manips;
+	boolean delaysSupplied;
+	Iterator<Integer> delaysItr;
+	List<Integer> delaysList;
+	int aPress;
+	int bPress;
+	int upPress;
+	int startPress;
 
 	public Don2P1FightStrategy(int frameRuleId, Map<String, CreateDon2P1ManipControlsFunction> m) {
 		this.frameRuleId = frameRuleId;
@@ -37,6 +46,21 @@ public class Don2P1FightStrategy implements FightStrategy {
 			throw new RuntimeException("Passed in manip names that are not supported");
 		}
 		manips = m;
+		delaysSupplied = false;
+	}
+	
+	public Don2P1FightStrategy(int frameRuleId, Map<String, CreateDon2P1ManipControlsFunction> m, List<Integer> delays, int aPress, int bPress, int upPress, int startPress) {
+		this.frameRuleId = frameRuleId;
+		if(!manipNames.containsAll(m.keySet())) {
+			throw new RuntimeException("Passed in manip names that are not supported");
+		}
+		manips = m;
+		delaysSupplied = true;
+		delaysList = delays;
+		this.aPress = aPress;
+		this.bPress = bPress;
+		this.upPress = upPress;
+		this.startPress = startPress;
 	}
 
 	public ManipControls getManipControls(FightState state) {
@@ -44,6 +68,9 @@ public class Don2P1FightStrategy implements FightStrategy {
 			throw new RuntimeException("Running Don 2 strategy on non-Don 2 state");
 		}
 		Don2P1FightState s = (Don2P1FightState) state;
+		if(s.getCurrentPatternId() == Don2P1PatternId.preFight) {
+			delaysItr = delaysList.iterator();
+		}
 		switch (s.getCurrentPatternId()) {
 		case preFight:
 			return new ManipControls(InputsIncrement.randomIncrement(), firstPunchDelay());
@@ -96,11 +123,11 @@ public class Don2P1FightStrategy implements FightStrategy {
 			}
 			return normalFacePunch.getManipControls();
 		case face:
-			return new ManipControls(InputsIncrement.randomIncrement(), new FramesIncrement(0));
+			return new ManipControls(faceInputsIncrement(), new FramesIncrement(0));
 		case delay:
 			return holdUpDuringDelay.getManipControls();
 		case delayDone:
-			return new ManipControls(InputsIncrement.randomIncrement(), standardPunchDelay());
+			return new ManipControls(afterDelayInputsIncrement(), standardPunchDelay());
 		default:
 			throw new RuntimeException("Not a recognized state to continue from");
 		}
@@ -121,24 +148,38 @@ public class Don2P1FightStrategy implements FightStrategy {
 		}
 		return throwStar;
 	}
+	
+	private InputsIncrement faceInputsIncrement() {
+		return delaysSupplied ? new InputsIncrement(0) : InputsIncrement.randomIncrement();
+	}
+	
+	private InputsIncrement afterDelayInputsIncrement() {
+		return delaysSupplied ? new InputsIncrement(startPress*4) : InputsIncrement.randomIncrement();
+	}
 
-	private static FramesIncrement standardPunchDelay() {
+	private FramesIncrement standardPunchDelay() {
+		if(delaysSupplied) {
+			return new FramesIncrement(delaysItr.next());
+		}
 		double r = ThreadLocalRandom.current().nextDouble();
 		if (r < .3)
-			return new FramesIncrement(0);
+			return new FramesIncrement(3);
 		if (r < .8)
 			return new FramesIncrement(1);
 		return new FramesIncrement(2);
 	}
 	
-	private static FramesIncrement leftGutDelay() {
+	private FramesIncrement leftGutDelay() {
 		return new FramesIncrement(standardPunchDelay().getValue()-1);
 	}
 
-	private static FramesIncrement firstPunchDelay() {
+	private FramesIncrement firstPunchDelay() {
+		if(delaysSupplied) {
+			return new FramesIncrement(delaysItr.next());
+		}
 		double r = ThreadLocalRandom.current().nextDouble();
 		if (r < .15)
-			return new FramesIncrement(0);
+			return new FramesIncrement(1);
 		if (r < .32)
 			return new FramesIncrement(1);
 		if (r < .55)
@@ -150,14 +191,14 @@ public class Don2P1FightStrategy implements FightStrategy {
 		return new FramesIncrement(5);
 	}
 
-	private static InputsIncrement gutPunchIncrement() {
-		int framesPressA = ThreadLocalRandom.current().nextInt(8,16);
-		return new InputsIncrement(framesPressA * 16);
+	private InputsIncrement gutPunchIncrement() {
+		int framesPressA = delaysSupplied ? aPress : ThreadLocalRandom.current().nextInt(8,16);
+		return new InputsIncrement((framesPressA * 16) + ThreadLocalRandom.current().nextInt(4,8)*128);
 	}
 
-	private static InputsIncrement facePunchIncrement() {
-		int framesPressB = ThreadLocalRandom.current().nextInt(6, 10);
-		int framesPressUp = ThreadLocalRandom.current().nextInt(10, 15);
+	private InputsIncrement facePunchIncrement() {
+		int framesPressB = delaysSupplied ? bPress :  ThreadLocalRandom.current().nextInt(6, 10);
+		int framesPressUp = delaysSupplied ? upPress :  ThreadLocalRandom.current().nextInt(10, 15);
 		return new InputsIncrement((framesPressB * 8 + framesPressUp * 32) % 0x100);
 	}
 }

@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+import java.util.OptionalDouble;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import Fight_States.Don2ILP1FightState;
 import Fight_States.Don2P1FightState;
@@ -24,14 +27,16 @@ public class Testing {
 
 	public static void main(String[] args) {
 		// runCalculations();
-		runILSimulation();
-		//runSSSimulation();
+		// runILSimulation();
+		// runSSSimulation();
 		//frameRuleTesting();
+		testingIncreaseRandomness();
 	}
+
 
 	private static void frameRuleTesting() {
 		FrameRule fr = new FrameRule(0);
-		
+
 		System.out.println(fr.getDon2SSWindows(10, 0));
 	}
 
@@ -44,15 +49,15 @@ public class Testing {
 		KnownInputInfo knownInputInfo = new KnownInputInfo(iArr);
 
 		// Gut star into gut
-//		for(int j = 0; j < 256; j++) {
-//			RngEventState s = new RngEventState(randomStarCondition, j, i);
-//			RngEventGoal goal = new RngEventGoal(s, randomStarCondition, 49, 7);
-//			for (Map.Entry<ManipControls, SuccessChance> entry : goal.inputEffects.entrySet()) {
-//				if(entry.getKey().inputsAdded == 192 && /*entry.getKey().framesDelayed == 4 &&*/ entry.getValue().overallChance > 0.4) {
-//					System.out.println(entry.getKey() + ", start at 001E=" + j + ": " + entry.getValue() );
-//				}
-//			}
-//		}
+		//		for(int j = 0; j < 256; j++) {
+		//			RngEventState s = new RngEventState(randomStarCondition, j, i);
+		//			RngEventGoal goal = new RngEventGoal(s, randomStarCondition, 49, 7);
+		//			for (Map.Entry<ManipControls, SuccessChance> entry : goal.inputEffects.entrySet()) {
+		//				if(entry.getKey().inputsAdded == 192 && /*entry.getKey().framesDelayed == 4 &&*/ entry.getValue().overallChance > 0.4) {
+		//					System.out.println(entry.getKey() + ", start at 001E=" + j + ": " + entry.getValue() );
+		//				}
+		//			}
+		//		}
 
 		// Gut star into face punch
 		for (int j = 0; j < 256; j++) {
@@ -71,10 +76,10 @@ public class Testing {
 
 			for (Map.Entry<ManipControls, SuccessChanceModified> entry : goal.inputEffectsModified.entrySet()) {
 				if (entry.getKey().getInputsAdded().getValue() == 88 /* && entry.getKey().framesDelayed == 4 */ ) {// &&
-																													// entry.getValue().overallChance
-																													// >
-																													// 0.3)
-																													// {
+					// entry.getValue().overallChance
+					// >
+					// 0.3)
+					// {
 					System.out.println(entry.getKey().getInputsAdded() + "," + entry.getKey().getFramesDelayed() + ","
 							+ j + "," + entry.getValue().overallChance);
 				}
@@ -87,14 +92,14 @@ public class Testing {
 				new Don2ILP1FightStrategy(fr, d1and2, d3, i1, i2));
 		int num3Stars = 0;
 		for (int i = 0; i < numIters; i++) {
-//			if(i == 200 && num3Stars == 0) {
-//				//unlikely to be good 
-//				return 0;
-//			}
-//			if(i == 1000 && num3Stars < 25) {
-//				//unlikely to be good 
-//				return 0;
-//			}
+			//			if(i == 200 && num3Stars == 0) {
+			//				//unlikely to be good 
+			//				return 0;
+			//			}
+			//			if(i == 1000 && num3Stars < 25) {
+			//				//unlikely to be good 
+			//				return 0;
+			//			}
 			FightState startingState = new Don2ILP1FightState();
 			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
 			while (!simulator.isDone()) {
@@ -112,14 +117,14 @@ public class Testing {
 				new Don2ILP1FightStrategy(fr, d1and2, d3, i1, i2));
 		List<Integer> starCounts = new ArrayList<>();
 		for (int i = 0; i < numIters; i++) {
-//			if(i == 300 && starCounts.stream().filter(a -> a == 3).mapToDouble(a -> a).count() == 0) {
-//				//unlikely to be good 
-//				return starCounts;
-//			}
-//			if(i == 1000 && starCounts.stream().filter(a -> a == 3).mapToDouble(a -> a).count() < 8) {
-//				//unlikely to be good 
-//				return starCounts;
-//			}
+			//			if(i == 300 && starCounts.stream().filter(a -> a == 3).mapToDouble(a -> a).count() == 0) {
+			//				//unlikely to be good 
+			//				return starCounts;
+			//			}
+			//			if(i == 1000 && starCounts.stream().filter(a -> a == 3).mapToDouble(a -> a).count() < 8) {
+			//				//unlikely to be good 
+			//				return starCounts;
+			//			}
 			FightState startingState = new Don2ILP1FightState();
 			FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
 			while (!simulator.isDone()) {
@@ -156,10 +161,10 @@ public class Testing {
 		incsList.add(Arrays.asList(224, 176));
 		incsList.add(Arrays.asList(192, 224));
 		incsList.add(Arrays.asList(96, 240));
-//		incsList.add(Arrays.asList(104,164));
-//		incsList.add(Arrays.asList(8, 180));
-//		incsList.add(Arrays.asList(232,228));
-//		incsList.add(Arrays.asList(136,244));
+		//		incsList.add(Arrays.asList(104,164));
+		//		incsList.add(Arrays.asList(8, 180));
+		//		incsList.add(Arrays.asList(232,228));
+		//		incsList.add(Arrays.asList(136,244));
 
 		for (int fr = 0; fr < 32; fr++) {
 			for (int d1and2 = 0; d1and2 < 8; d1and2++) {
@@ -185,13 +190,13 @@ public class Testing {
 		System.out.println(String.format("d1and2: %d, fr: %d, inc1: %d, inc2: %d, prob: %f", maxd1, maxfr, maxInc1,
 				maxInc2, maxProb));
 
-//		d1and2: 6, fr: 24, inc1: 9, inc2: 55, prob: 0.063000
-//		0.85967
-//		0.081475
-//		0.058855
-//		0.006489
+		//		d1and2: 6, fr: 24, inc1: 9, inc2: 55, prob: 0.063000
+		//		0.85967
+		//		0.081475
+		//		0.058855
+		//		0.006489
 
-//		d1and2: 5, fr: 22, inc1: 192, inc2: 224, prob: 0.033550
+		//		d1and2: 5, fr: 22, inc1: 192, inc2: 224, prob: 0.033550
 
 		System.out.println("\nDelay 5 frames: ");
 		int numIters = 10000000;
@@ -202,7 +207,7 @@ public class Testing {
 		System.out.println("Chance get both stars: " + starCounts1.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
 		System.out.println("Chance get blocked after getting 1st star: " + blocks1.stream().filter(a -> a).count() / ((double) numIters));
 		System.out.println();
-		
+
 		System.out.println("Delay 6 frames: ");
 		List<Integer> starCounts2 = getStarCounts(22, 6, 0, numIters,192,224);
 		List<Boolean> blocks2 = getBlocks(22, 6, 0, numIters,192,224);
@@ -216,50 +221,134 @@ public class Testing {
 		System.out.println(fr22.getDon2ILNoLossWindows(0, 30));
 		System.out.println("Second try don 2 timings:");
 		System.out.println(fr22.getDon2ILWithLossWindows(1, 0));
-		
-		
-//		double maxProb = 0;
-//		int maxfr = -1, maxd1 = -1, maxd3 = -1;
-//		// IL testing
-//		for (int fr = 0; fr < 32; fr++) {
-//			for (int d1and2 = 1; d1and2 < 10; d1and2++) {
-//				for (int d3 = 0; d3 < 8; d3++) {
-//					double probSum = 0;
-//					for(int i = d1and2-1; i<=d1and2+1; i++) {
-//						for(int j = d3; j<=d3; j++) {
-//							probSum += getProbability(fr, i, j, 100000);
-//						}
-//					}
-//					double prob = probSum/3;
-//					if (prob > maxProb) {
-//						maxProb = prob;
-//						maxd1 = d1and2;
-//						maxd3 = d3;
-//						maxfr = fr;
-//					}
-//				}
-//			}
-//		}
-//		System.out.println(String.format("d1and2: %d, d3: %d, fr: %d, prob: %f", maxd1, maxd3, maxfr, maxProb));
+
+
+		//		double maxProb = 0;
+		//		int maxfr = -1, maxd1 = -1, maxd3 = -1;
+		//		// IL testing
+		//		for (int fr = 0; fr < 32; fr++) {
+		//			for (int d1and2 = 1; d1and2 < 10; d1and2++) {
+		//				for (int d3 = 0; d3 < 8; d3++) {
+		//					double probSum = 0;
+		//					for(int i = d1and2-1; i<=d1and2+1; i++) {
+		//						for(int j = d3; j<=d3; j++) {
+		//							probSum += getProbability(fr, i, j, 100000);
+		//						}
+		//					}
+		//					double prob = probSum/3;
+		//					if (prob > maxProb) {
+		//						maxProb = prob;
+		//						maxd1 = d1and2;
+		//						maxd3 = d3;
+		//						maxfr = fr;
+		//					}
+		//				}
+		//			}
+		//		}
+		//		System.out.println(String.format("d1and2: %d, d3: %d, fr: %d, prob: %f", maxd1, maxd3, maxfr, maxProb));
 
 	}
+
+	private static void testingIncreaseRandomness() {
+		//factors that are random but could be consistent by person
+		//time pressing any buttons
+		//delays between punches
+
+		int innerIters = 100000;
+		int numParams = 200;
+
+		List<List<Double>> results = new ArrayList<>();
+		for(int j = 0; j<numParams; j++) {
+			List<Integer> delaysList = new ArrayList<>();
+			for(int i = 0; i < 11; i++) {
+				delaysList.add(ThreadLocalRandom.current().nextInt(0,5));
+				//delaysList.add(j);
+			}
+			int standardAPress = ThreadLocalRandom.current().nextInt(0,16);
+			int standardUpOnFace = ThreadLocalRandom.current().nextInt(0,8);
+			int standardBOnFace = ThreadLocalRandom.current().nextInt(0,32);
+			int standardStartOnStar = ThreadLocalRandom.current().nextInt(0,64);
+			int[] starCounts = new int[4];
+			int totalStars = 0;
+			for (int i = 0; i < innerIters; i++) {	
+				int fr = ThreadLocalRandom.current().nextInt(0,32);
+				StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(new Don2P1FightStrategy(fr, new HashMap<>(), delaysList, standardAPress, standardBOnFace, standardUpOnFace, standardStartOnStar));
+				FightState startingState = new Don2P1FightState();
+				FightSimulator simulator = new FightSimulator(startingState, stateUpdateFunction);
+				while (!simulator.isDone()) {
+					simulator.nextFightState();
+				}
+				Don2P1FightState finalState = (Don2P1FightState) simulator.getState();
+				starCounts[finalState.numStars()]++;
+				totalStars += finalState.numStars();
+			}
+			List<Double> trialResults = new ArrayList<>();
+			for(int i = 0; i<4; i++) {
+				trialResults.add(starCounts[i] / ((double)innerIters));
+			}
+			trialResults.add(totalStars / ((double)innerIters));
+			results.add(trialResults);
+		}
+		//System.out.println(results);
+		
+		List<Double> zeroStarPs = results.stream().map(l -> l.get(0)).sorted().collect(Collectors.toList());
+		List<Double> oneStarPs = results.stream().map(l -> l.get(1)).sorted().collect(Collectors.toList());
+		List<Double> twoStarPs = results.stream().map(l -> l.get(2)).sorted().collect(Collectors.toList());
+		List<Double> threeStarPs = results.stream().map(l -> l.get(3)).sorted().collect(Collectors.toList());
+		
+		System.out.println("zero="+zeroStarPs);
+		System.out.println("one="+oneStarPs);
+		System.out.println("two="+twoStarPs);
+		System.out.println("three="+threeStarPs);
+		
+		System.out.println("0 star sd: " + sd(zeroStarPs));
+		System.out.println("1 star sd: " + sd(oneStarPs));
+		System.out.println("2 star sd: " + sd(twoStarPs));
+		System.out.println("3 star sd: " + sd(threeStarPs));
+
+//		List<Double> avgPerParamsDoubles = results.stream().map(l -> l.stream().map(il -> il.get(4)).mapToDouble(a -> a).average().orElse(0)).collect(Collectors.toList());
+//
+//		System.out.println(avgPerParamsDoubles);
+//		System.out.println(sd(avgPerParamsDoubles));
+//		System.out.println(sd(avgPerParamsDoubles) / avgPerParamsDoubles.stream().mapToDouble(a -> a).average().orElse(0));
+//
+//		List<List<Double>> avgsList = results.stream().map(l -> l.stream().map(il -> il.get(4)).collect(Collectors.toList())).collect(Collectors.toList());
+//		System.out.println(avgsList);
+//		List<Double> sdOfAvgs = avgsList.stream().map(l -> sd(l)).collect(Collectors.toList());
+//		System.out.println(sdOfAvgs);
+	}
+
+	private static double sd(List<Double> list) {
+		// Calculate sum.
+		double sum = list.stream().mapToDouble(i -> i).sum();
+
+		// Calculate mean.
+		double mean = list.stream().mapToDouble(i -> i).average().orElse(0);
+
+		// Calculate sd partial.
+		double sd = list.stream().collect(Collectors.summingDouble(val -> Math.pow(val - mean, 2)));
+		// or list.stream().mapToDouble(val -> Math.pow(val - mean, 2)).sum();
+
+		return Math.sqrt(sd / list.size());
+	}
+
 
 	public static void runSSSimulation() {
 		double max = 0;
 		int maxfr = -1;
 
 		// test match
-//		System.out.println(Don2P1FightStrategy.holdAManip.getManipControls());
-//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
-//				.getFunction(Collections.emptyList(), Arrays.asList(Button.A), 0).getManipControls());
-//
-//		System.out.println(Don2P1FightStrategy.holdAandSelectAndPunchBManip.getManipControls());
-//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
-//				.getFunction(Arrays.asList(Button.A, Button.SELECT), Arrays.asList(Button.B), 0).getManipControls());
-//
-//		System.out.println(Don2P1FightStrategy.misdirectManip.getManipControls());
-//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
-//				.getFunction(Arrays.asList(Button.UP), Arrays.asList(Button.B), 0).getManipControls());
+		//		System.out.println(Don2P1FightStrategy.holdAManip.getManipControls());
+		//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+		//				.getFunction(Collections.emptyList(), Arrays.asList(Button.A), 0).getManipControls());
+		//
+		//		System.out.println(Don2P1FightStrategy.holdAandSelectAndPunchBManip.getManipControls());
+		//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+		//				.getFunction(Arrays.asList(Button.A, Button.SELECT), Arrays.asList(Button.B), 0).getManipControls());
+		//
+		//		System.out.println(Don2P1FightStrategy.misdirectManip.getManipControls());
+		//		System.out.println(CreateDon2P1ManipControlsFunctionFactory
+		//				.getFunction(Arrays.asList(Button.UP), Arrays.asList(Button.B), 0).getManipControls());
 
 		Map<String, Collection<Button>> holdButtons = new HashMap<>();
 		Map<String, Collection<Button>> punchButtons = new HashMap<>();
@@ -332,7 +421,7 @@ public class Testing {
 			System.out.println("Normal: " +getStarResults(1000000, fr, new HashMap<>()));
 		}
 	}
-	
+
 	public static String getStarResults(int numIters, int fr, Map<String, CreateDon2P1ManipControlsFunction> manips) {
 		StateUpdateFunction stateUpdateFunction = new Don2P1StateUpdateFunction(new Don2P1FightStrategy(fr, manips));
 		int totalStars = 0;
