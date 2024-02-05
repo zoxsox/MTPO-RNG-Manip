@@ -71,27 +71,21 @@ public class Don2ILP1FightStrategy implements FightStrategy {
 				return new ManipControls(gutPunchIncrement(), new FramesIncrement(delay1and2));
 			}
 			return normalGutPunch.getManipControls();
-		case gut1:
-			if (s.isPrevPunchStar()) {
-				return holdAManip.getManipControls();
-			} else {
-				return normalGutPunch.getManipControls();
-			}
-		case gut2:
+		case gut1, gut2:
 			if (s.isPrevPunchStar()) {
 				return holdAManip.getManipControls();
 			} else {
 				return normalGutPunch.getManipControls();
 			}
 		case gut3:
-			if (testingIL) {
-				return bufferFaceControlsFunction.getManipControls();
-			}
-			if (s.isPrevPunchStar()) {
-				return misdirectManip.getManipControls();
-			} else {
-				return normalFacePunch.getManipControls();
-			}
+		if (testingIL) {
+			return bufferFaceControlsFunction.getManipControls();
+		}
+		if (s.isPrevPunchStar()) {
+			return misdirectManip.getManipControls();
+		} else {
+			return normalFacePunch.getManipControls();
+		}
 		case face:
 			return new ManipControls(InputsIncrement.randomIncrement(), new FramesIncrement(0));
 		case delay:

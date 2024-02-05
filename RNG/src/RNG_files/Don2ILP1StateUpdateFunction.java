@@ -92,14 +92,12 @@ public class Don2ILP1StateUpdateFunction implements StateUpdateFunction {
 						s.addFrames(FACE_STAR_DELAY);
 					}
 					s.setCurrentPatternId(Don2P1PatternId.done);
-					return;
-				}else {
+                }else {
 					s.setCurrentPatternId(Don2P1PatternId.done);
 					s.setBlocked(true);
-					return;
-				}
-				
-			}else {
+                }
+                return;
+            }else {
 				s.addFrames(GUT_TO_FACE);
 				s.incPunches();
 				s.dealDamage(5);

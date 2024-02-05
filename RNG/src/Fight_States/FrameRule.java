@@ -25,7 +25,7 @@ public class FrameRule {
 	}
 
 	public FramesIncrement framesToFirstPunch() {
-		return new FramesIncrement((3 + 8*frameRuleId) % 0x100);
+		return new FramesIncrement((5 + 8*frameRuleId) % 0x100);
 	}
 	
 	public String getWindows(boolean IL) {

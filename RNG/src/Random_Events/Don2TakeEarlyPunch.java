@@ -12,7 +12,7 @@ public class Don2TakeEarlyPunch implements ValidRngValueCallable {
 	private boolean isValidBitArray(boolean[] bitArray) {
 		if(bitArray == null) return false;
 		if(bitArray.length != 8) return false;
-		return bitArray[7];
+		return bitArray[0];
 	}
 	
 }

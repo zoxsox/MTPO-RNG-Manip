@@ -43,7 +43,7 @@ public abstract class MemoryValue {
 	}
 	
 	private boolean getBit(int bitIndex) {
-		return ((value >> bitIndex) & 1) == 1;
+		return ((value >> (7-bitIndex)) & 1) == 1;
 	}
 	
 	public boolean[] getBitArray() {

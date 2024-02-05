@@ -1,14 +1,6 @@
 package RNG_files;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalDouble;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -20,17 +12,112 @@ import Fight_Strategies.Don2ILP1FightStrategy;
 import Fight_Strategies.Don2P1FightStrategy;
 import Memory_Value.FramesIncrement;
 import Memory_Value.FramesValue;
+import Memory_Value.InputsIncrement;
+import Memory_Value.InputsValue;
+import Memory_Value.RngValue;
 import Random_Events.Don2NoRandomStar;
 import Random_Events.Don2RandomStar;
+import Random_Events.GuaranteedEvent;
+import Random_Events.HippoLongShortDelay;
+import Random_Events.HippoOpen;
+import Random_Events.HippoPunch2LeftJab;
+import Random_Events.HippoPunch2Open;
+import Random_Events.HippoPunch2RightJab;
+import Random_Events.HippoShortLongDelay;
 
 public class Testing {
 
 	public static void main(String[] args) {
-		// runCalculations();
-		// runILSimulation();
+//		hippoCalculations();
+		runILSimulation();
 		// runSSSimulation();
 		//frameRuleTesting();
-		testingIncreaseRandomness();
+//		testingIncreaseRandomness();
+//		for(int k = 0; k<256; k++) {
+//		int shortCounter = 0;
+//		int totalCounter = 0;
+//		for(int i = 0; i<256; i+=2) {
+//			for(int j = 4; j<8; j++) {
+//				InputsValue iv = new InputsValue(i);
+//				FramesValue fv = new FramesValue(j);
+//				RngValue rng = RngValue.scramble(iv, fv);
+//				if((rng.getValue() >> 1) % 2 == 1) {
+//					totalCounter++;
+//					RngValue next = RngValue.predictFutureRng(iv, fv, new InputsIncrement(k), new FramesIncrement(2));
+//					boolean shortDelay = (next.getValue() >> 1) % 2 == 1;
+//					if(shortDelay) {
+//						shortCounter++;
+//					}
+//				}
+//			}
+//		}
+//		if(((double)shortCounter) / totalCounter > .51)
+//			System.out.println(k + ": " + ((double)shortCounter) / totalCounter);
+//		}
+	}
+
+	private static void hippoCalculations() {
+		RngEventConditions hippoOpenCondition = new RngEventConditions("test", new HippoOpen(), false);
+		RngEventConditions longDelayCondition = new RngEventConditions("test", new HippoLongShortDelay(), false);
+		RngEventConditions shortDelayCondition = new RngEventConditions("test", new HippoShortLongDelay(), false);
+		RngEventConditions hippo2ndOpenCondition = new RngEventConditions("test", new HippoPunch2Open(), false);
+		RngEventConditions hippoPunch2LeftJabCondition = new RngEventConditions("test", new HippoPunch2LeftJab(), false);
+		RngEventConditions hippoPunch2RightJabCondition = new RngEventConditions("test", new HippoPunch2RightJab(), false);
+		InputBitInfo[] iArr = { InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN,
+				InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.ZERO, InputBitInfo.ZERO };
+		KnownInputInfo knownInputInfo = new KnownInputInfo(iArr);
+		
+		//shorts blue to 1st punch check: 115
+		//shorts blue to delay+2nd punch check: 358 (2 right guts)
+		//shorts blue to 12-28 3rd punch check: 414 (2 right guts)
+		//shorts blue to 12-28 4th punch check: 686 (5 total right guts)
+		//shorts blue to 28-0 3rd punch check: 430 (2 right guts)
+		//shorts blue to 28-0 4th punch check: 674 (5 total right guts)
+		//5559 shorts blue
+		//5674 first open check
+		//5917 delay + 2nd punch check
+		
+		//5973 3rd punch check for 12-28 frame delay (early frame)
+		//6245 4th punch check for 12-28 frame delay (early frame)
+		
+		//5989 3rd punch check for 28-0 frame delay (early frame)
+		//6233 4th punch check for 28-0 frame delay (early frame)
+		
+		
+		//673
+		//6247 
+		//new backup strat
+		//shorts blue to delay+2nd punch check: 356
+		//shorts to 12-28 3rd punch check (first frame cancel): 404
+		//shorts to 28-0 3rd punch check (first frame cancel): 420
+		//shorts to 12-28 4th punch check (first frame cancel): 673
+		//shorts to 28-0 4th punch check (first frame cancel): 661
+		//5963 3rd punch check for 12-28 (first frame cancel)
+		
+		//37/38 manip strat
+		//shorts blue to delay+2nd punch check: 356
+		//shorts to 12-28 3rd punch check (first frame cancel): 609
+		//shorts to 28-0 3rd punch check (first frame cancel): 625
+		//6168 12-28 3rd punch check (no slowdowns)
+		
+		for (int j = 4; j < 256; j+=8) { //when shorts turn blue
+			//j=36 for 5:00 strat, j=20 for 5:04 strat
+			FramesValue onRngCheck001E = new FramesValue(j);
+			RngEventState s = new RngEventState(new RngEventConditions("test", new GuaranteedEvent(), false), onRngCheck001E, knownInputInfo);
+			RngEventGoal goal = new RngEventGoal(s, hippoOpenCondition, new FramesIncrement(420),
+					new FramesIncrement(70));
+//			RngEventState s = new RngEventState(new RngEventConditions("test", new HippoPunch2LeftJab(), false), new FramesValue(j+356), knownInputInfo);
+//			RngEventGoal goal = new RngEventGoal(s, shortDelayCondition, new FramesIncrement(0),
+//					new FramesIncrement(0));
+
+			for (Map.Entry<ManipControls, SuccessChanceModified> entry : goal.inputEffectsModified.entrySet()) {
+				if ((j == 36) && entry.getKey().getInputsAdded().getValue() == 0 && entry.getValue().overallChance > 0.2) {
+					System.out.println(entry.getKey().getInputsAdded() + "," + entry.getKey().getFramesDelayed() + ","
+							+ j + "," + Math.round(entry.getValue().overallChance*1000)/1000.0);
+				}
+			}
+		}
+		
 	}
 
 
@@ -187,8 +274,8 @@ public class Testing {
 			}
 		}
 		System.out.println("Best strategy:");
-		System.out.println(String.format("d1and2: %d, fr: %d, inc1: %d, inc2: %d, prob: %f", maxd1, maxfr, maxInc1,
-				maxInc2, maxProb));
+		System.out.printf("d1and2: %d, fr: %d, inc1: %d, inc2: %d, prob: %f%n", maxd1, maxfr, maxInc1,
+				maxInc2, maxProb);
 
 		//		d1and2: 6, fr: 24, inc1: 9, inc2: 55, prob: 0.063000
 		//		0.85967
@@ -198,29 +285,16 @@ public class Testing {
 
 		//		d1and2: 5, fr: 22, inc1: 192, inc2: 224, prob: 0.033550
 
-		System.out.println("\nDelay 5 frames: ");
 		int numIters = 10000000;
-		List<Integer> starCounts1 = getStarCounts(22, 5, 0, numIters,192,224);
-		List<Boolean> blocks1 = getBlocks(22, 5, 0, numIters,192,224);
-		System.out.println("Chance don't get 1st star: " + starCounts1.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get 1st star but not 2nd " + starCounts1.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get both stars: " + starCounts1.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get blocked after getting 1st star: " + blocks1.stream().filter(a -> a).count() / ((double) numIters));
-		System.out.println();
+		for(int i = 0; i<10; i++) {
+			printILStratStats(18, i, numIters, 64, 160);
+		}
 
-		System.out.println("Delay 6 frames: ");
-		List<Integer> starCounts2 = getStarCounts(22, 6, 0, numIters,192,224);
-		List<Boolean> blocks2 = getBlocks(22, 6, 0, numIters,192,224);
-		System.out.println("Chance don't get 1st star: " + starCounts2.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get 1st star but not 2nd " + starCounts2.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get both stars: " + starCounts2.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
-		System.out.println("Chance get blocked after getting 1st star: " + blocks2.stream().filter(a -> a).count() / ((double) numIters));
-
-		FrameRule fr22 = new FrameRule(22);
+		FrameRule fr18 = new FrameRule(18);
 		System.out.println("\nFirst try don 2 timings:");
-		System.out.println(fr22.getDon2ILNoLossWindows(0, 30));
+		System.out.println(fr18.getDon2ILNoLossWindows(0, 30));
 		System.out.println("Second try don 2 timings:");
-		System.out.println(fr22.getDon2ILWithLossWindows(1, 0));
+		System.out.println(fr18.getDon2ILWithLossWindows(1, 0));
 
 
 		//		double maxProb = 0;
@@ -247,6 +321,17 @@ public class Testing {
 		//		}
 		//		System.out.println(String.format("d1and2: %d, d3: %d, fr: %d, prob: %f", maxd1, maxd3, maxfr, maxProb));
 
+	}
+
+	private static void printILStratStats(int fr, int delay, int numIters, int inc1, int inc2) {
+		System.out.printf("\nDelay %d frames: ", delay);
+		List<Integer> starCounts1 = getStarCounts(fr, delay, 0, numIters,inc1,inc2);
+		List<Boolean> blocks1 = getBlocks(fr, delay, 0, numIters,inc1,inc2);
+		System.out.println("Chance don't get 1st star: " + starCounts1.stream().filter(a -> a == 1).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get 1st star but not 2nd " + starCounts1.stream().filter(a -> a == 2).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get both stars: " + starCounts1.stream().filter(a -> a == 3).mapToDouble(a -> a).count() / ((double) numIters));
+		System.out.println("Chance get blocked after getting 1st star: " + blocks1.stream().filter(a -> a).count() / ((double) numIters));
+		System.out.println();
 	}
 
 	private static void testingIncreaseRandomness() {

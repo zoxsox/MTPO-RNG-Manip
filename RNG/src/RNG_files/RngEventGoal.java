@@ -28,7 +28,7 @@ public class RngEventGoal {
 		FramesValue firstFrame = prevEvent.onRngCheck001E.add(framesBetween);
 		for(int i = 0; i<256; i++) {
 			InputsIncrement inputsAdded = new InputsIncrement(i);
-			for(int j = 0; j<maxDelay.getValue(); j++) {
+			for(int j = 0; j<=maxDelay.getValue(); j++) {
 				FramesIncrement framesDelayed = new FramesIncrement(j);
 				FramesValue new_001E = firstFrame.add(framesDelayed);
 				inputEffects.put(new ManipControls(inputsAdded, framesDelayed), 
