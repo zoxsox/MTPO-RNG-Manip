@@ -15,24 +15,18 @@ import Memory_Value.FramesValue;
 import Memory_Value.InputsIncrement;
 import Memory_Value.InputsValue;
 import Memory_Value.RngValue;
-import Random_Events.Don2NoRandomStar;
-import Random_Events.Don2RandomStar;
-import Random_Events.GuaranteedEvent;
-import Random_Events.HippoLongShortDelay;
-import Random_Events.HippoOpen;
-import Random_Events.HippoPunch2LeftJab;
-import Random_Events.HippoPunch2Open;
-import Random_Events.HippoPunch2RightJab;
-import Random_Events.HippoShortLongDelay;
+import Random_Events.*;
 
 public class Testing {
 
+
 	public static void main(String[] args) {
 //		hippoCalculations();
-		runILSimulation();
-		// runSSSimulation();
+		machoCalculations();
+		//runILSimulation();
+//		runSSSimulation();
 		//frameRuleTesting();
-//		testingIncreaseRandomness();
+		//testingIncreaseRandomness();
 //		for(int k = 0; k<256; k++) {
 //		int shortCounter = 0;
 //		int totalCounter = 0;
@@ -120,6 +114,72 @@ public class Testing {
 		
 	}
 
+	private static void machoCalculations() {
+		//54774 shorts green
+		//54896 punch 1 check (+122)
+		//54964 punch 2 check (+68) // for gut, face saves 1 frame
+		//55035 punch 3 check (+71)
+		//55089 pattern check (+54)
+
+		// upper1 -> upper2 -> upper3 -> good pattern
+		//        -> hook2  ->
+
+		RngEventConditions guaranteedCondition = new RngEventConditions("", new GuaranteedEvent(), false);
+		RngEventConditions machoPunch1UpperCondition = new RngEventConditions("", new MachoPunch1Upper(), false);
+		RngEventConditions machoPunch2UpperCondition = new RngEventConditions("", new MachoPunch2Upper(), false);
+		RngEventConditions machoPunch2HookCondition = new RngEventConditions("", new MachoPunch2Hook(), false);
+		RngEventConditions machoPunch3UpperCondition = new RngEventConditions("", new MachoPunch3Upper(), false);
+		RngEventConditions machoGoodPatternCondition = new RngEventConditions("", new MachoGoodPattern(), false);
+		InputBitInfo[] iArr = { InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN,
+				InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.UNKNOWN, InputBitInfo.ZERO };
+		KnownInputInfo knownInputInfo = new KnownInputInfo(iArr);
+
+		RngChainEvent start = new RngChainEvent("start",
+				guaranteedCondition,
+				new FramesIncrement(122),
+				new FramesIncrement(0),
+				GetInputsIncrementFunctionFactory.getFunction(Button.B));
+		RngChainEvent upper1 = new RngChainEvent("upper1",
+				machoPunch1UpperCondition,
+				new FramesIncrement(67),
+				new FramesIncrement(1),
+				GetInputsIncrementFunctionFactory.getFunction(Button.A));
+		RngChainEvent upper2 = new RngChainEvent("upper2",
+				machoPunch2UpperCondition,
+				new FramesIncrement(71),
+				new FramesIncrement(2),
+				GetInputsIncrementFunctionFactory.getFunction(Button.B));
+		RngChainEvent hook2 = new RngChainEvent("hook2",
+				machoPunch2HookCondition,
+				new FramesIncrement(74),
+				new FramesIncrement(2),
+				GetInputsIncrementFunctionFactory.getFunction(Button.B));
+		RngChainEvent upper3 = new RngChainEvent("upper3",
+				machoPunch3UpperCondition,
+				new FramesIncrement(54),
+				new FramesIncrement(0),
+				GetInputsIncrementFunctionFactory.getFunction(Button.START));
+		RngChainEvent patternCheck = new RngChainEvent("patternCheck",
+				machoGoodPatternCondition,
+				null,
+				null,
+				null);
+		start.nextEvents = Collections.singletonList(upper1);
+		upper1.nextEvents = List.of(upper2, hook2);
+		upper2.nextEvents = Collections.singletonList(upper3);
+		hook2.nextEvents = Collections.singletonList(upper3);
+		upper3.nextEvents = Collections.singletonList(patternCheck);
+		patternCheck.nextEvents = Collections.emptyList();
+
+		for (int i = 0; i < 32; i++) {
+			RngChainSimulator rngChainSimulator = new RngChainSimulator(new FrameRule(i), knownInputInfo, start);
+			Map<Map<String, FramesIncrement>, Double> results = rngChainSimulator.simulate(100000);
+//			for (Map.Entry entry: results.entrySet()) {
+//				System.out.println(entry.getKey() + " -> " + entry.getValue());
+//			}
+			System.out.println("Frame rule " + i + ": " + Math.round(results.values().stream().mapToDouble(v -> v).average().getAsDouble()*1000)/1000.0);
+		}
+	}
 
 	private static void frameRuleTesting() {
 		FrameRule fr = new FrameRule(0);

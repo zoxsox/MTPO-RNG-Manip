@@ -69,7 +69,9 @@ public class Don2P1FightStrategy implements FightStrategy {
 		}
 		Don2P1FightState s = (Don2P1FightState) state;
 		if(s.getCurrentPatternId() == Don2P1PatternId.preFight) {
-			delaysItr = delaysList.iterator();
+			if (delaysSupplied) {
+				delaysItr = delaysList.iterator();
+			}
 		}
 		switch (s.getCurrentPatternId()) {
 		case preFight:

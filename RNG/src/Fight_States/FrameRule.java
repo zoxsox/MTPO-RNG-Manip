@@ -1,6 +1,7 @@
 package Fight_States;
 
 import Memory_Value.FramesIncrement;
+import Memory_Value.FramesValue;
 
 public class FrameRule {
 	
@@ -26,6 +27,10 @@ public class FrameRule {
 
 	public FramesIncrement framesToFirstPunch() {
 		return new FramesIncrement((5 + 8*frameRuleId) % 0x100);
+	}
+
+	public FramesValue macho001EAtGreenShorts() {
+		return new FramesValue((6 + (frameRuleId+11)*8) % 0x100);
 	}
 	
 	public String getWindows(boolean IL) {

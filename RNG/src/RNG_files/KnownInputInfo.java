@@ -2,6 +2,8 @@ package RNG_files;
 
 import Memory_Value.InputsValue;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 enum InputBitInfo {
   ONE,
   ZERO,
@@ -24,5 +26,15 @@ public class KnownInputInfo {
 			}
 		}
 		return true;
+	}
+
+	public InputsValue randomValidInputsValue() {
+		int val = 0;
+		for(int i = 0; i<8; i++) {
+			if(knownInfo[i] == InputBitInfo.ONE || (knownInfo[i] == InputBitInfo.UNKNOWN && ThreadLocalRandom.current().nextDouble() < 0.5)) {
+				val += 1<<(7-i);
+			}
+		}
+		return new InputsValue(val);
 	}
 }
